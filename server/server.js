@@ -1,12 +1,14 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
 import { database } from "../server/config/db.js";
 import router from "../server/routes/auth.js";
-dotenv.config();
+import { errorHandler } from "./middleware/error.js";
 database();
 const app = express();
 app.use(express.json());
 app.use("/api/auth", router());
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

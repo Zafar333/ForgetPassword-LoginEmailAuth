@@ -1,6 +1,8 @@
 import { User } from "../models/users.js";
+import { ErrorResponse } from "../utils/errorResponse.js";
 export const register = async (req, res, next) => {
   const { username, password, email } = req.body;
+  // register code is start here
   try {
     const user = await User.create({ username, email, password });
     res.json({
@@ -9,35 +11,27 @@ export const register = async (req, res, next) => {
       user: user,
     });
   } catch (error) {
-    res.json({ success: false, status: 500, msg: error.message });
+    next(error);
   }
 };
 // login code is start
 export const login = async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.json({
-      success: false,
-      status: 400,
-      msg: "please provide email and password",
-    });
+    return next(new ErrorResponse("please provide an email and address", 400));
   } else {
     try {
       const user = await User.findOne({ email }).select("+password");
       if (!user) {
-        res.json({ status: 404, msg: "Invalid credidentials", success: false });
+        return next(new ErrorResponse("Invalid credentials", 401));
       }
       const ismatch = await user.matchPasswords(password);
       if (!ismatch) {
-        res.json({
-          success: false,
-          status: 400,
-          msg: "Your password is incorrect",
-        });
+        return next(new ErrorResponse("Invalid credentials", 401));
       }
       res.json({ status: 200, success: true, token: "64387ejkwdjnk" });
     } catch (error) {
-      res.json({ success: false, status: 500, msg: error.message });
+      next(error);
     }
   }
 };
