@@ -1,15 +1,17 @@
 import { User } from "../models/users.js";
 import { ErrorResponse } from "../utils/errorResponse.js";
+import jwt from "jsonwebtoken";
 export const register = async (req, res, next) => {
   const { username, password, email } = req.body;
   // register code is start here
   try {
     const user = await User.create({ username, email, password });
-    res.json({
-      status: 200,
-      success: true,
-      user: user,
-    });
+    sendToken(user, 200, res); //this line is to call jwt token function to take a token
+    // res.json({
+    //   status: 200,
+    //   success: true,
+    //   user: user,
+    // });
   } catch (error) {
     next(error);
   }
@@ -29,7 +31,10 @@ export const login = async (req, res, next) => {
       if (!ismatch) {
         return next(new ErrorResponse("Invalid credentials", 401));
       }
-      res.json({ status: 200, success: true, token: "64387ejkwdjnk" });
+
+      sendToken(user, 200, res); //this line is to call jwt token function to take a token
+
+      // res.json({ status: 200, success: true, token: "64387ejkwdjnk" });
     } catch (error) {
       next(error);
     }
@@ -43,4 +48,11 @@ export const forgotPassword = (req, res, next) => {
 
 export const resetPassword = (req, res, next) => {
   res.json("Reset Password route");
+};
+
+// jwt token function call is here start
+
+const sendToken = async function (user, statusCode, res) {
+  const token = user.getSignedToken();
+  res.status(statusCode).json({ success: true, token });
 };
